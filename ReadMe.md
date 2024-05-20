@@ -12,6 +12,21 @@ npm install bootstrap-icons
 npm run build
 ```
 
+# Pre-Render As Static
+
+```powershell
+npm install -D @sveltejs/adapter-static
+
+# Modify svelte.config.js
+
+npm run build
+```
+
+## References
+
+- https://kit.svelte.dev/docs/adapter-static
+- https://kinsta.com/blog/static-sveltekit/
+
 # Resources
 
 - [Svelte](https://svelte.dev/)

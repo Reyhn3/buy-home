@@ -53,6 +53,7 @@
 
 	<Row>
 		<Col xs="2">
+<!--TODO: Add label above (maybe encapsulate in component?)-->
 			<Input
 				id="inp-income"
 				type="number"
@@ -89,6 +90,7 @@
 
 	<Row>
 		<Col xs="2">
+<!--TODO: Change to slider-->
 			<Input
 				id="inp-price"
 				type="number"
