@@ -1,19 +1,84 @@
 <script lang="ts">
 	import {
 		Alert,
-		Button,
 		Container,
 		Col,
 		Row,
 		Input,
 		Icon,
 		Popover,
+		Table,
 		Tooltip
 	} from '@sveltestrap/sveltestrap';
 	import Currency from './Currency.svelte';
 
+
 	const DEBT_RATIO_LIMIT = 4.5;
 	const MIN_DEPOSIT_PERC = 0.15;
+	const DEDUCTION_LIMIT = 200000;
+	const DEDUCTION_FIRST = 0.3;
+	const DEDUCTION_REST = 0.21;
+
+
+	//TODO: Extract functions from here
+	/**
+	 * @param {number} p The price of the house
+	 * @param {number} d The size of the deposit
+	 */
+	const calcLoan = (p, d) => {
+		return Math.max(0, p - d);
+	};
+
+	/**
+	 * @param {number} l The size of the loan
+	 * @param {number} ir The interest rate
+	 */
+	const calcInterest = (l, ir) => {
+		return Math.round((l * ir) / 100 / 12);
+	};
+
+	/**
+	 * @param {number} l The size of the loan
+	 * @param {number} i The monthly household income
+	 */
+	const calcDebtRatio = (l, i) => {
+		var yearlyIncome = i * 12;
+		var quotient = l / yearlyIncome;
+		return quotient;
+	};
+
+	/**
+	 * @param {number} p The price of the house
+	 * @param {number} l The size of the loan
+	 * @param {number} i The monthly household income
+	 */
+	const calcMortgage = (p, l, i) => {
+		var quotient = l / p;
+		var mortgageRate = 0;
+
+		if (quotient > 0.7) mortgageRate = 0.02;
+		else if (quotient > 0.5) mortgageRate = 0.01;
+
+		var debtRatio = calcDebtRatio(l, i);
+		if (debtRatio > DEBT_RATIO_LIMIT) mortgageRate += 0.01;
+
+		return Math.round((l * mortgageRate) / 12);
+	};
+
+	/**
+	 * @param {number} i The monthly interest amount
+	 */
+	const calcDeduction = (i) => {
+		var yearlyInterest = i * 12;
+
+//TODO: Not done yet
+		// if (yearlyInterest > DEDUCTION_LIMIT) {
+		// 	return Math.round(DEDUCTION_FIRST * yearlyInterest);
+		// }
+
+		return 0;
+	};
+
 
 	// Household input
 	$: income = (40 + 40) * 1000;
@@ -25,14 +90,13 @@
 
 	// Calculated values
 	$: yearlyIncome = income * 12;
-	$: isMortgageLimitExceeded = loan > yearlyIncome * DEBT_RATIO_LIMIT;
-	$: loan = Math.max(0, price - deposit);
+	$: loan = calcLoan(price, deposit);
+	$: isMortgageLimitExceeded = calcDebtRatio(loan, income) > DEBT_RATIO_LIMIT;
 	$: minDeposit = MIN_DEPOSIT_PERC * price;
 	$: maxDeposit = Math.max(price, loan);
-	//TODO: Move arithmetics to functions
-	$: interest = Math.round((loan * interestRate / 100) / 12);
-	//TODO: Use the correct formula
-	$: mortgage = Math.round((loan * 0.02) / 12);
+	$: interest = calcInterest(loan, interestRate);
+	$: mortgage = calcMortgage(price, loan, income);
+	$: deduction = Math.round(0);
 </script>
 
 <h1>Kalkylator för bostadsköp</h1>
@@ -272,33 +336,36 @@
 					<tr>
 						<th>Amortering</th>
 						<td>
-			<Currency value={mortgage} />
-			{#if isMortgageLimitExceeded}
-				<Alert color="warning" heading="Hög skuldkvot">
-					<p>
+							<Currency value={mortgage} />
+							{#if isMortgageLimitExceeded}
+								<Alert color="warning" heading="Hög skuldkvot">
+									<p>
 										Om du tar ett nytt bolån, och lånet tillsammans med
 										eventuella andra bolån som du redan har, är större än
 										motsvarande 4,5 gånger din bruttoinkomst måste du amortera
 										1&nbsp;% extra per år på det nya lånet.
-					</p>
-					<p>
-						<a
-							href="https://www.konsumenternas.se/lan--betalningar/lan/bolan/amorteringskrav/"
-							class="alert-link"
-							target="_blank"
-						>
-							Läs mer&nbsp;<Icon name="box-arrow-up-right" />
-						</a>
-					</p>
-				</Alert>
-			{/if}
+									</p>
+									<p>
+										<a
+											href="https://www.konsumenternas.se/lan--betalningar/lan/bolan/amorteringskrav/"
+											class="alert-link"
+											target="_blank"
+										>
+											Läs mer&nbsp;<Icon name="box-arrow-up-right" />
+										</a>
+									</p>
+								</Alert>
+							{/if}
 						</td>
+					</tr>
+					<tr>
+						<th>Avdrag</th>
+						<td><Currency value={deduction} /></td>
 					</tr>
 				</tbody>
 			</Table>
 		</Col>
 	</Row>
-
 </Container>
 
 <style>
