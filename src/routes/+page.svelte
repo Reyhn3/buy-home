@@ -242,8 +242,8 @@
 			/>
 		</Col>
 	</Row>
-	<Row>
-		<Col xs="6">
+	<Row cols="2">
+		<Col>
 			<Input
 				id="inp-interest-rate"
 				type="range"
@@ -261,29 +261,25 @@
 		</Col>
 	</Row>
 
-	<Row>
-		<Col xs="2">
-			<strong>Ränta:</strong>
-		</Col>
+	<Row cols="2">
 		<Col>
-			<Currency value={interest} />
-		</Col>
-	</Row>
-
-	<Row>
-		<Col xs="2">
-			<strong>Amortering:</strong>
-		</Col>
-		<Col>
+			<Table borderless hover>
+				<tbody>
+					<tr>
+						<th>Ränta</th>
+						<td><Currency value={interest} /></td>
+					</tr>
+					<tr>
+						<th>Amortering</th>
+						<td>
 			<Currency value={mortgage} />
-		</Col>
-		<Col>
 			{#if isMortgageLimitExceeded}
 				<Alert color="warning" heading="Hög skuldkvot">
 					<p>
-						Om du tar ett nytt bolån, och lånet tillsammans med eventuella andra bolån
-						som du redan har, är större än motsvarande 4,5 gånger din bruttoinkomst
-						måste du amortera 1&nbsp;% extra per år på det nya lånet.
+										Om du tar ett nytt bolån, och lånet tillsammans med
+										eventuella andra bolån som du redan har, är större än
+										motsvarande 4,5 gånger din bruttoinkomst måste du amortera
+										1&nbsp;% extra per år på det nya lånet.
 					</p>
 					<p>
 						<a
@@ -296,8 +292,13 @@
 					</p>
 				</Alert>
 			{/if}
+						</td>
+					</tr>
+				</tbody>
+			</Table>
 		</Col>
 	</Row>
+
 </Container>
 
 <style>
