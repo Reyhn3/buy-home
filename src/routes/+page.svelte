@@ -20,17 +20,17 @@
 
 	// Property input
 	$: price = 4500000;
-	$: interestRate = 0.052;
+	$: interestRate = 5.2;
 	$: deposit = 1000000;
 
 	// Calculated values
 	$: yearlyIncome = income * 12;
 	$: isMortgageLimitExceeded = loan > yearlyIncome * DEBT_RATIO_LIMIT;
-	$: loan = price - deposit;
+	$: loan = Math.max(0, price - deposit);
 	$: minDeposit = MIN_DEPOSIT_PERC * price;
 	$: maxDeposit = Math.max(price, loan);
 	//TODO: Move arithmetics to functions
-	$: interest = Math.round((loan * interestRate) / 12);
+	$: interest = Math.round((loan * interestRate / 100) / 12);
 	//TODO: Use the correct formula
 	$: mortgage = Math.round((loan * 0.02) / 12);
 </script>
@@ -88,6 +88,18 @@
 			<Currency value={yearlyIncome} />
 		</Col>
 	</Row>
+	<Row>
+		<Col xs="6">
+			<Input
+				id="inp-income"
+				type="range"
+				bind:value={income}
+				min="0"
+				max="150000"
+				step="5000"
+			/>
+		</Col>
+	</Row>
 
 	<Row>
 		<Col>
@@ -117,7 +129,6 @@
 	</Row>
 	<Row>
 		<Col>
-			<!--TODO: Change to slider-->
 			<Input
 				id="inp-price"
 				type="number"
@@ -132,6 +143,18 @@
 			<Currency value={loan} />
 		</Col>
 		<!--TODO: Add skuldkvot-->
+	</Row>
+	<Row>
+		<Col xs="6">
+			<Input
+				id="inp-price"
+				type="range"
+				bind:value={price}
+				min="0"
+				max="10000000"
+				step="5000"
+			/>
+		</Col>
 	</Row>
 
 	<Row>
@@ -177,6 +200,18 @@
 		</Col>
 		<!--TODO: Add procentsats för insatsen-->
 	</Row>
+	<Row>
+		<Col xs="6">
+			<Input
+				id="inp-deposit"
+				type="range"
+				bind:value={deposit}
+				min={minDeposit}
+				max={maxDeposit}
+				step="25000"
+			/>
+		</Col>
+	</Row>
 
 	<Row>
 		<Col>
@@ -184,7 +219,12 @@
 				Ränta
 				<Icon id="icn-info-interest-rate" name="info-circle" style="info" />
 			</span>
-			<Popover target="icn-info-interest-rate" placement="right" title="Ränta" hideOnOutsideClick>
+			<Popover
+				target="icn-info-interest-rate"
+				placement="right"
+				title="Ränta"
+				hideOnOutsideClick
+			>
 				Detta är <strong>räntesatsen</strong> på bolånet.
 			</Popover>
 		</Col>
@@ -197,7 +237,19 @@
 				placeholder="Ränta"
 				bind:value={interestRate}
 				min="0"
-				max="100"
+				max="25"
+				step="0.1"
+			/>
+		</Col>
+	</Row>
+	<Row>
+		<Col xs="6">
+			<Input
+				id="inp-interest-rate"
+				type="range"
+				bind:value={interestRate}
+				min="0"
+				max="25"
 				step="0.1"
 			/>
 		</Col>
@@ -239,7 +291,7 @@
 							class="alert-link"
 							target="_blank"
 						>
-							Läs mer <Icon name="box-arrow-up-right" />
+							Läs mer&nbsp;<Icon name="box-arrow-up-right" />
 						</a>
 					</p>
 				</Alert>
@@ -249,6 +301,10 @@
 </Container>
 
 <style>
+	h2 {
+		font-size: 1.2em;
+	}
+
 	.label {
 		color: slategray;
 		font-family: 'Comic Sans MS';
