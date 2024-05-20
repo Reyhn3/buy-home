@@ -4,9 +4,25 @@ npm install npm -g
 npm create svelte@latest buy-home
 cd buy-home
 npm install
-cd ..
 git init && git add -A && git commit -m "chore: initial commit"
 npm run dev -- --open
+# npm install bootstrap@latest
+npm install svelte @sveltestrap/sveltestrap
+npm install bootstrap-icons
 npm run build
 ```
 
+# Resources
+
+- [Svelte](https://svelte.dev/)
+  Web app framework.
+
+- [Bootstrap](https://getbootstrap.com/)
+  Frontend toolkit.
+
+  - [Bootstrap Icons](https://icons.getbootstrap.com/)
+
+- [Sveltestrap](https://sveltestrap.js.org/?path=/docs/sveltestrap-overview--docs)
+
+  [Source](https://github.com/sveltestrap/sveltestrap) ⤴
+  Bootstrap 5 components for Svelte
