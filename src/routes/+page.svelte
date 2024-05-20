@@ -78,6 +78,17 @@
 		return Math.round((DEDUCTION_FIRST * DEDUCTION_LIMIT + DEDUCTION_REST * (yearlyInterest - DEDUCTION_LIMIT)) / 12);
 	};
 
+	/**
+	 * @param {number} i The monthly interest amount
+	 * @param {number} m The monthly mortgage amount
+	 * @param {number} u The monthly upkeep cost
+	 * @param {number} t The yearly property tax
+	 * @param {number} d The monthly deduction amount
+	 */
+	const calcSum = (i, m, u, t, d) => {
+		return Math.round(i + m + u + t / 12 - d);
+	};
+
 
 	// Household input
 	$: income = (40 + 40) * 1000;
@@ -86,6 +97,8 @@
 	$: price = 4500000;
 	$: interestRate = 5.2;
 	$: deposit = 1000000;
+	$: upkeep = 4500;
+	$: tax = 9525;
 
 	// Calculated values
 	$: yearlyIncome = income * 12;
@@ -96,6 +109,8 @@
 	$: interest = calcInterest(loan, interestRate);
 	$: mortgage = calcMortgage(price, loan, income);
 	$: deduction = calcDeduction(interest);
+	$: sumWithoutDeduction = calcSum(interest, mortgage, upkeep, tax, 0);
+	$: sumWithDeduction = calcSum(interest, mortgage, upkeep, tax, deduction);
 </script>
 
 <h1>Kalkylator för bostadsköp</h1>
@@ -320,6 +335,90 @@
 
 	<Row>
 		<Col>
+			<span id="lbl-upkeep" class="label">
+				Driftkostnad
+				<Icon id="icn-info-upkeep" name="info-circle" style="info" />
+			</span>
+			<Popover
+				target="icn-info-upkeep"
+				placement="right"
+				title="Driftkostnad"
+				hideOnOutsideClick
+			>
+				Bostadens driftkostnad.
+			</Popover>
+		</Col>
+	</Row>
+	<Row cols="2">
+		<Col>
+			<Input
+				id="inp-upkeep"
+				type="number"
+				placeholder="Driftkostnad"
+				bind:value={upkeep}
+				min="0"
+				max="25000"
+				step="50"
+			/>
+		</Col>
+	</Row>
+	<Row cols="2">
+		<Col>
+			<Input
+				id="inp-upkeep"
+				type="range"
+				bind:value={upkeep}
+				min="0"
+				max="25000"
+				step="50"
+			/>
+		</Col>
+	</Row>
+
+	<Row>
+		<Col>
+			<span id="lbl-tax" class="label">
+				Fastighetsskatt
+				<Icon id="icn-info-tax" name="info-circle" style="info" />
+			</span>
+			<Popover
+				target="icn-info-tax"
+				placement="right"
+				title="Fastighetsskatt"
+				hideOnOutsideClick
+			>
+				Fastighetsskatt
+			</Popover>
+		</Col>
+	</Row>
+	<Row cols="2">
+		<Col>
+			<Input
+				id="inp-tax"
+				type="number"
+				placeholder="Fastighetsskatt"
+				bind:value={tax}
+				min="0"
+				max="10000"
+				step="50"
+			/>
+		</Col>
+	</Row>
+	<Row cols="2">
+		<Col>
+			<Input
+				id="inp-tax"
+				type="range"
+				bind:value={tax}
+				min="0"
+				max="10000"
+				step="50"
+			/>
+		</Col>
+	</Row>
+
+	<Row>
+		<Col>
 			<h2>Kostnader</h2>
 		</Col>
 	</Row>
@@ -360,6 +459,14 @@
 					<tr>
 						<th>Avdrag</th>
 						<td><Currency value={deduction} /></td>
+					</tr>
+					<tr>
+						<th>Summa</th>
+						<td><Currency value={sumWithoutDeduction} /></td>
+					</tr>
+					<tr>
+						<th>Summa (efter avdrag)</th>
+						<td><Currency value={sumWithDeduction} /></td>
 					</tr>
 				</tbody>
 			</Table>
