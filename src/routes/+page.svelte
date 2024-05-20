@@ -10,54 +10,74 @@
 		Popover,
 		Tooltip
 	} from '@sveltestrap/sveltestrap';
-	import Currency from "./Currency.svelte";
-
-	let locale = 'sv-SE'; //  https://github.com/libyal/libfwnt/wiki/Language-Code-identifiers
+	import Currency from './Currency.svelte';
 
 	const DEBT_RATIO_LIMIT = 4.5;
 	const MIN_DEPOSIT_PERC = 0.15;
 
-
 	// Household input
 	$: income = (40 + 40) * 1000;
-
 
 	// Property input
 	$: price = 4500000;
 	$: interestRate = 0.052;
 	$: deposit = 1000000;
 
-
 	// Calculated values
 	$: yearlyIncome = income * 12;
-	$: isMortgageLimitExceeded = loan > (yearlyIncome * DEBT_RATIO_LIMIT);
+	$: isMortgageLimitExceeded = loan > yearlyIncome * DEBT_RATIO_LIMIT;
 	$: loan = price - deposit;
 	$: minDeposit = MIN_DEPOSIT_PERC * price;
 	$: maxDeposit = Math.max(price, loan);
-//TODO: Move arithmetics to functions
+	//TODO: Move arithmetics to functions
 	$: interest = Math.round((loan * interestRate) / 12);
-//TODO: Use the correct formula
+	//TODO: Use the correct formula
 	$: mortgage = Math.round((loan * 0.02) / 12);
 </script>
 
 <h1>Kalkylator för bostadsköp</h1>
 
 <Container>
-
 	<Row>
 		<Col>
 			<h2>Hushållet</h2>
 		</Col>
-
 	</Row>
 
 	<Row>
-		<Col xs="2">
-<!--TODO: Add label above (maybe encapsulate in component?)-->
+		<Col>
+			<span id="lbl-income" class="label">
+				Inkomst
+				<Icon id="icn-info-income" name="info-circle" style="info" />
+			</span>
+			<!-- <Tooltip target="lbl-income" placement="right" delay="500">
+				Detta är hushållets totala och gemensamma årsinkomst.
+			</Tooltip> -->
+			<Popover target="icn-info-income" placement="right" title="Inkomst" hideOnOutsideClick>
+				Detta är hushållets gemensamma inkomst per månad.
+			</Popover>
+		</Col>
+		<Col>
+			<span id="lbl-yearly-income" class="label">
+				Årsinkomst
+				<Icon id="icn-info-yearly-income" name="info-circle" style="info" />
+			</span>
+			<Popover
+				target="icn-info-yearly-income"
+				placement="right"
+				title="Årsinkomst"
+				hideOnOutsideClick
+			>
+				Hushållets årliga inkomst.
+			</Popover>
+		</Col>
+	</Row>
+	<Row>
+		<Col>
 			<Input
 				id="inp-income"
 				type="number"
-				placeholder="Årsinkomst"
+				placeholder="Månadsinkomst"
 				bind:value={income}
 				min="0"
 				max="150000"
@@ -65,22 +85,9 @@
 			/>
 		</Col>
 		<Col>
-			<Icon id="icn-info-income" name="info-circle" />
-			<Popover target="icn-info-income" placement="right" title="Årsinkomst" hideOnOutsideClick>
-				Detta är hushållets totala och gemensamma årsinkomst.
-			</Popover>
-		</Col>
-		<Col xs="1">
-			{yearlyIncome}
-		</Col>
-		<Col>
-			<Icon id="icn-info-yearly-income" name="info-circle" />
-			<Popover target="icn-info-yearly-income" placement="right" title="Årsinkomst" hideOnOutsideClick>
-				Hushållets årliga inkomst.
-			</Popover>
+			<Currency value={yearlyIncome} />
 		</Col>
 	</Row>
-
 
 	<Row>
 		<Col>
@@ -89,8 +96,28 @@
 	</Row>
 
 	<Row>
-		<Col xs="2">
-<!--TODO: Change to slider-->
+		<Col>
+			<span id="lbl-price" class="label">
+				Pris
+				<Icon id="icn-info-price" name="info-circle" style="info" />
+			</span>
+			<Popover target="icn-info-price" placement="right" title="Pris" hideOnOutsideClick>
+				Detta är <strong>priset</strong> på bostaden.
+			</Popover>
+		</Col>
+		<Col>
+			<span id="lbl-price" class="label">
+				Lån
+				<Icon id="icn-info-loan" name="info-circle" />
+			</span>
+			<Popover target="icn-info-loan" placement="right" title="Lån" hideOnOutsideClick>
+				Detta är hur stort <strong>lånet</strong> blir.
+			</Popover>
+		</Col>
+	</Row>
+	<Row>
+		<Col>
+			<!--TODO: Change to slider-->
 			<Input
 				id="inp-price"
 				type="number"
@@ -100,29 +127,41 @@
 				max="10000000"
 				step="5000"
 			/>
-			<!-- <Tooltip target="inp-price" placement="right" delay="500">
-				Detta är <strong>priset</strong> på bostaden.
-			</Tooltip> -->
 		</Col>
 		<Col>
-			<Icon id="icn-info-price" name="info-circle" />
-			<Popover target="icn-info-price" placement="right" title="Pris" hideOnOutsideClick>
-				Detta är <strong>priset</strong> på bostaden.
-			</Popover>
+			<Currency value={loan} />
 		</Col>
-		<Col xs="1">
-			{loan}
-		</Col>
-		<Col>
-			<Icon id="icn-info-loan" name="info-circle" />
-			<Popover target="icn-info-loan" placement="right" title="Lån" hideOnOutsideClick>
-				Detta är hur stort <strong>lånet</strong> blir.
-			</Popover>
-		</Col>
+		<!--TODO: Add skuldkvot-->
 	</Row>
 
 	<Row>
-		<Col xs="2">
+		<Col>
+			<span id="lbl-deposit" class="label">
+				Insats
+				<Icon id="icn-info-deposit" name="info-circle" style="info" />
+			</span>
+			<Popover target="icn-info-deposit" placement="right" title="Insats" hideOnOutsideClick>
+				Detta är <strong>kontantinsatsen</strong>.
+			</Popover>
+		</Col>
+		<Col>
+			<span id="lbl-deposit" class="label">
+				Minsta insats
+				<Icon id="icn-info-min-deposit" name="info-circle" />
+			</span>
+			<Popover
+				target="icn-info-min-deposit"
+				placement="right"
+				title="Minsta insats"
+				hideOnOutsideClick
+			>
+				<p>Detta är den <strong>minsta</strong> tillåtna insatsen.</p>
+				<p>Kontantinsatsen måste vara minst 15% av köpeskillingen.</p>
+			</Popover>
+		</Col>
+	</Row>
+	<Row>
+		<Col>
 			<Input
 				id="inp-deposit"
 				type="number"
@@ -134,25 +173,24 @@
 			/>
 		</Col>
 		<Col>
-			<Icon id="icn-info-deposit" name="info-circle" />
-			<Popover target="icn-info-deposit" placement="right" title="Insats" hideOnOutsideClick>
-				Detta är <strong>kontantinsatsen</strong> till köpet.
-			</Popover>
+			<Currency value={minDeposit} />
 		</Col>
-		<Col xs="1">
-			{minDeposit}
-		</Col>
-		<Col>
-			<Icon id="icn-info-min-deposit" name="info-circle" />
-			<Popover target="icn-info-min-deposit" placement="right" title="Minsta insats" hideOnOutsideClick>
-				<p>Detta är den <strong>minsta</strong> tillåtna insatsen.</p>
-				<p>Kontantinsatsen måste vara minst 15% av köpeskillingen.</p>
-			</Popover>
-		</Col>
+		<!--TODO: Add procentsats för insatsen-->
 	</Row>
 
 	<Row>
-		<Col xs="2">
+		<Col>
+			<span id="lbl-interest-rate" class="label">
+				Ränta
+				<Icon id="icn-info-interest-rate" name="info-circle" style="info" />
+			</span>
+			<Popover target="icn-info-interest-rate" placement="right" title="Ränta" hideOnOutsideClick>
+				Detta är <strong>räntesatsen</strong> på bolånet.
+			</Popover>
+		</Col>
+	</Row>
+	<Row cols="2">
+		<Col>
 			<Input
 				id="inp-interest-rate"
 				type="number"
@@ -162,17 +200,6 @@
 				max="100"
 				step="0.1"
 			/>
-		</Col>
-		<Col>
-			<Icon id="icn-info-interest-rate" name="info-circle" />
-			<Popover
-				target="icn-info-interest-rate"
-				placement="right"
-				title="Ränta"
-				hideOnOutsideClick
-			>
-				Detta är <strong>räntesatsen</strong> för lånet.
-			</Popover>
 		</Col>
 	</Row>
 
@@ -187,7 +214,7 @@
 			<strong>Ränta:</strong>
 		</Col>
 		<Col>
-			<Currency value={interest} {locale} />
+			<Currency value={interest} />
 		</Col>
 	</Row>
 
@@ -196,21 +223,36 @@
 			<strong>Amortering:</strong>
 		</Col>
 		<Col>
-			<Currency value={mortgage} {locale} />
+			<Currency value={mortgage} />
 		</Col>
 		<Col>
 			{#if isMortgageLimitExceeded}
-			<Alert color="warning" heading="Hög skuldkvot">
-				<p>
-					Om du tar ett nytt bolån, och lånet tillsammans med eventuella andra bolån som du redan har, är större än motsvarande 4,5 gånger din bruttoinkomst måste du amortera 1&nbsp;% extra per år på det nya lånet.
-				</p>
-				<p>
-					<a href="https://www.konsumenternas.se/lan--betalningar/lan/bolan/amorteringskrav/" class="alert-link" target="_blank">
-						Läs mer <Icon name="box-arrow-up-right" />
-					</a>
-				</p>
-			</Alert>
+				<Alert color="warning" heading="Hög skuldkvot">
+					<p>
+						Om du tar ett nytt bolån, och lånet tillsammans med eventuella andra bolån
+						som du redan har, är större än motsvarande 4,5 gånger din bruttoinkomst
+						måste du amortera 1&nbsp;% extra per år på det nya lånet.
+					</p>
+					<p>
+						<a
+							href="https://www.konsumenternas.se/lan--betalningar/lan/bolan/amorteringskrav/"
+							class="alert-link"
+							target="_blank"
+						>
+							Läs mer <Icon name="box-arrow-up-right" />
+						</a>
+					</p>
+				</Alert>
 			{/if}
 		</Col>
 	</Row>
 </Container>
+
+<style>
+	.label {
+		color: slategray;
+		font-family: 'Comic Sans MS';
+		font-size: 0.7em;
+		font-weight: bold;
+	}
+</style>

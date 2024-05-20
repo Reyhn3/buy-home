@@ -1,6 +1,6 @@
 <script>
 	export let value;
-	export let locale = 'sv-SE';
+	export let locale = 'sv-SE'; // https://github.com/libyal/libfwnt/wiki/Language-Code-identifiers
 
 	$: formatted = value.toLocaleString(locale, {
 		style: 'currency',

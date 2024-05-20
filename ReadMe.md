@@ -1,3 +1,5 @@
+# Setup
+
 ```powershell
 winget install -e --id OpenJS.NodeJS
 npm install npm -g
@@ -5,11 +7,9 @@ npm create svelte@latest buy-home
 cd buy-home
 npm install
 git init && git add -A && git commit -m "chore: initial commit"
-npm run dev -- --open
-# npm install bootstrap@latest
 npm install svelte @sveltestrap/sveltestrap
 npm install bootstrap-icons
-npm run build
+npm run dev -- --open
 ```
 
 # Pre-Render As Static
@@ -17,7 +17,10 @@ npm run build
 ```powershell
 npm install -D @sveltejs/adapter-static
 
-# Modify svelte.config.js
+# Modify svelte.config.js (see reference below)
+
+# Add the following to src/routes/+layout.js:
+export const prerender = true;
 
 npm run build
 ```
@@ -25,6 +28,27 @@ npm run build
 ## References
 
 - https://kit.svelte.dev/docs/adapter-static
+- https://kinsta.com/blog/static-sveltekit/
+
+# Deploy
+
+Deploy as static page to [Kinsta](https://kinsta.com/):
+
+1. Push the code to GitLab.
+2. Create an account at Kinsta.
+3. **Authorize** Kinsta with your Git provider.
+4. Click **Static Sites** on the left sidebar, then click **Add site**.
+5. Select the repository and the branch you wish to deploy from.
+6. Assign a unique name to your site.
+7. Add the build settings in the following format:
+   - **Build command:** `npm run build`
+   - **Publish directory:** `build`
+8. Finally, click **Create site**.
+
+The code will be deployed.
+
+## References
+
 - https://kinsta.com/blog/static-sveltekit/
 
 # Resources
