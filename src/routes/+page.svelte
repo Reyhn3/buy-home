@@ -71,12 +71,11 @@
 	const calcDeduction = (i) => {
 		var yearlyInterest = i * 12;
 
-//TODO: Not done yet
-		// if (yearlyInterest > DEDUCTION_LIMIT) {
-		// 	return Math.round(DEDUCTION_FIRST * yearlyInterest);
-		// }
+		if (yearlyInterest < DEDUCTION_LIMIT) {
+			return Math.round(DEDUCTION_FIRST * yearlyInterest / 12);
+		}
 
-		return 0;
+		return Math.round((DEDUCTION_FIRST * DEDUCTION_LIMIT + DEDUCTION_REST * (yearlyInterest - DEDUCTION_LIMIT)) / 12);
 	};
 
 
@@ -96,7 +95,7 @@
 	$: maxDeposit = Math.max(price, loan);
 	$: interest = calcInterest(loan, interestRate);
 	$: mortgage = calcMortgage(price, loan, income);
-	$: deduction = Math.round(0);
+	$: deduction = calcDeduction(interest);
 </script>
 
 <h1>Kalkylator för bostadsköp</h1>
