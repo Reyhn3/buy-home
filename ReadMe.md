@@ -51,6 +51,15 @@ The code will be deployed.
 
 - https://kinsta.com/blog/static-sveltekit/
 
+# Future
+
+- Share calculation
+  Encode all parameters to a base64-string that can be shared with others.
+- Set as reference
+  Lock a value (maybe only the price?) and manipulate the other parameters so it is easier to compare and do "what if this changes"-scenarios.
+- Explain formulas
+  Show the mathematical formulas and the actual values used when explaining the fields.
+
 # Resources
 
 - [Svelte](https://svelte.dev/)

@@ -7,10 +7,10 @@
 		Input,
 		Icon,
 		Popover,
-		Table,
-		Tooltip
+		Table
 	} from '@sveltestrap/sveltestrap';
-	import Currency from './Currency.svelte';
+	import FormattedNumber from './FormattedNumber.svelte';
+	import Details from './Details.svelte';
 
 
 	const DEBT_RATIO_LIMIT = 4.5;
@@ -27,6 +27,13 @@
 	 */
 	const calcLoan = (p, d) => {
 		return Math.max(0, p - d);
+	};
+
+	/**
+	 * @param {number} d The size of the deposit
+	 */
+	const calcMaxLoan = (d) => {
+		return Math.round(d / 0.15) - d;
 	};
 
 	/**
@@ -52,7 +59,7 @@
 	 * @param {number} l The size of the loan
 	 * @param {number} i The monthly household income
 	 */
-	const calcMortgage = (p, l, i) => {
+	const calcMortgageRate = (p, l, i) => {
 		var quotient = l / p;
 		var mortgageRate = 0;
 
@@ -62,6 +69,16 @@
 		var debtRatio = calcDebtRatio(l, i);
 		if (debtRatio > DEBT_RATIO_LIMIT) mortgageRate += 0.01;
 
+		return mortgageRate;
+	};
+
+	/**
+	 * @param {number} p The price of the house
+	 * @param {number} l The size of the loan
+	 * @param {number} i The monthly household income
+	 */
+	const calcMortgage = (p, l, i) => {
+		var mortgageRate = calcMortgageRate(p, l, i);
 		return Math.round((l * mortgageRate) / 12);
 	};
 
@@ -72,10 +89,14 @@
 		var yearlyInterest = i * 12;
 
 		if (yearlyInterest < DEDUCTION_LIMIT) {
-			return Math.round(DEDUCTION_FIRST * yearlyInterest / 12);
+			return Math.round((DEDUCTION_FIRST * yearlyInterest) / 12);
 		}
 
-		return Math.round((DEDUCTION_FIRST * DEDUCTION_LIMIT + DEDUCTION_REST * (yearlyInterest - DEDUCTION_LIMIT)) / 12);
+		return Math.round(
+			(DEDUCTION_FIRST * DEDUCTION_LIMIT +
+				DEDUCTION_REST * (yearlyInterest - DEDUCTION_LIMIT)) /
+				12
+		);
 	};
 
 	/**
@@ -88,7 +109,6 @@
 	const calcSum = (i, m, u, t, d) => {
 		return Math.round(i + m + u + t / 12 - d);
 	};
-
 
 	// Household input
 	$: income = (40 + 40) * 1000;
@@ -103,17 +123,19 @@
 	// Calculated values
 	$: yearlyIncome = income * 12;
 	$: loan = calcLoan(price, deposit);
-	$: isMortgageLimitExceeded = calcDebtRatio(loan, income) > DEBT_RATIO_LIMIT;
+	$: maxLoan = calcMaxLoan(deposit);
+	$: debtRatio = calcDebtRatio(loan, income);
+	$: isMortgageLimitExceeded = debtRatio > DEBT_RATIO_LIMIT;
 	$: minDeposit = MIN_DEPOSIT_PERC * price;
 	$: maxDeposit = Math.max(price, loan);
+	$: depositPerc = Math.round((deposit / price + Number.EPSILON) * 100) / 100;
 	$: interest = calcInterest(loan, interestRate);
+	$: mortgageRate = calcMortgageRate(price, loan, income);
 	$: mortgage = calcMortgage(price, loan, income);
 	$: deduction = calcDeduction(interest);
 	$: sumWithoutDeduction = calcSum(interest, mortgage, upkeep, tax, 0);
 	$: sumWithDeduction = calcSum(interest, mortgage, upkeep, tax, deduction);
 </script>
-
-<h1>Kalkylator för bostadsköp</h1>
 
 <Container>
 	<Row>
@@ -124,29 +146,12 @@
 
 	<Row>
 		<Col>
-			<span id="lbl-income" class="label">
+			<span class="label">
 				Inkomst
 				<Icon id="icn-info-income" name="info-circle" style="info" />
 			</span>
-			<!-- <Tooltip target="lbl-income" placement="right" delay="500">
-				Detta är hushållets totala och gemensamma årsinkomst.
-			</Tooltip> -->
 			<Popover target="icn-info-income" placement="right" title="Inkomst" hideOnOutsideClick>
 				Detta är hushållets gemensamma inkomst per månad.
-			</Popover>
-		</Col>
-		<Col>
-			<span id="lbl-yearly-income" class="label">
-				Årsinkomst
-				<Icon id="icn-info-yearly-income" name="info-circle" style="info" />
-			</span>
-			<Popover
-				target="icn-info-yearly-income"
-				placement="right"
-				title="Årsinkomst"
-				hideOnOutsideClick
-			>
-				Hushållets årliga inkomst.
 			</Popover>
 		</Col>
 	</Row>
@@ -162,12 +167,9 @@
 				step="5000"
 			/>
 		</Col>
-		<Col>
-			<Currency value={yearlyIncome} />
-		</Col>
 	</Row>
 	<Row>
-		<Col xs="6">
+		<Col>
 			<Input
 				id="inp-income"
 				type="range"
@@ -176,6 +178,13 @@
 				max="150000"
 				step="5000"
 			/>
+		</Col>
+	</Row>
+	<Row>
+		<Col>
+			<Details id="yearly-income" label="Årsinkomst" value={yearlyIncome}>
+				<span slot="description"> Hushållets årliga inkomst. </span>
+			</Details>
 		</Col>
 	</Row>
 
@@ -187,21 +196,12 @@
 
 	<Row>
 		<Col>
-			<span id="lbl-price" class="label">
+			<span class="label">
 				Pris
 				<Icon id="icn-info-price" name="info-circle" style="info" />
 			</span>
 			<Popover target="icn-info-price" placement="right" title="Pris" hideOnOutsideClick>
 				Detta är <strong>priset</strong> på bostaden.
-			</Popover>
-		</Col>
-		<Col>
-			<span id="lbl-price" class="label">
-				Lån
-				<Icon id="icn-info-loan" name="info-circle" />
-			</span>
-			<Popover target="icn-info-loan" placement="right" title="Lån" hideOnOutsideClick>
-				Detta är hur stort <strong>lånet</strong> blir.
 			</Popover>
 		</Col>
 	</Row>
@@ -217,13 +217,9 @@
 				step="5000"
 			/>
 		</Col>
-		<Col>
-			<Currency value={loan} />
-		</Col>
-		<!--TODO: Add skuldkvot-->
 	</Row>
 	<Row>
-		<Col xs="6">
+		<Col>
 			<Input
 				id="inp-price"
 				type="range"
@@ -234,30 +230,25 @@
 			/>
 		</Col>
 	</Row>
+	<Row>
+		<Col>
+			<Details id="min-deposit" label="Minsta insats" value={minDeposit}>
+				<span slot="description">
+					<p>Detta är den <strong>minsta</strong> tillåtna insatsen.</p>
+					<p>Kontantinsatsen måste vara minst 15% av köpeskillingen.</p>
+				</span>
+			</Details>
+		</Col>
+	</Row>
 
 	<Row>
 		<Col>
-			<span id="lbl-deposit" class="label">
+			<span class="label">
 				Insats
 				<Icon id="icn-info-deposit" name="info-circle" style="info" />
 			</span>
 			<Popover target="icn-info-deposit" placement="right" title="Insats" hideOnOutsideClick>
 				Detta är <strong>kontantinsatsen</strong>.
-			</Popover>
-		</Col>
-		<Col>
-			<span id="lbl-deposit" class="label">
-				Minsta insats
-				<Icon id="icn-info-min-deposit" name="info-circle" />
-			</span>
-			<Popover
-				target="icn-info-min-deposit"
-				placement="right"
-				title="Minsta insats"
-				hideOnOutsideClick
-			>
-				<p>Detta är den <strong>minsta</strong> tillåtna insatsen.</p>
-				<p>Kontantinsatsen måste vara minst 15% av köpeskillingen.</p>
 			</Popover>
 		</Col>
 	</Row>
@@ -273,13 +264,9 @@
 				step="50000"
 			/>
 		</Col>
-		<Col>
-			<Currency value={minDeposit} />
-		</Col>
-		<!--TODO: Add procentsats för insatsen-->
 	</Row>
 	<Row>
-		<Col xs="6">
+		<Col>
 			<Input
 				id="inp-deposit"
 				type="range"
@@ -290,10 +277,45 @@
 			/>
 		</Col>
 	</Row>
+	<Row>
+		<Col>
+			<Details id="loan" label="Lån" value={loan}>
+				<span slot="description"> Lånets storlek. </span>
+			</Details>
+		</Col>
+		<Col>
+			<Details id="deposit-perc" label="Procent" value={depositPerc} style="percent">
+				<span slot="description"> Insatsen i procent av bostadens pris. </span>
+			</Details>
+		</Col>
+		<Col>
+			<Details
+				id="debt-ratio"
+				label="Skuldkvot"
+				value={debtRatio}
+				style="decimal"
+				decimals="1"
+			>
+				<span slot="description">
+					Lånets storlek i förhållande till hushållets bruttoårsinkomst.
+				</span>
+			</Details>
+		</Col>
+		<Col>
+			<Details id="max-loan" label="Lånetak" value={maxLoan}>
+				<span slot="description"> Maximalt tillåtet lån. </span>
+			</Details>
+		</Col>
+		<Col>
+			<Details id="mortgage-rate" label="Amortering" value={mortgageRate} style="percent">
+				<span slot="description"> Procentsatsen för amortering. </span>
+			</Details>
+		</Col>
+	</Row>
 
 	<Row>
 		<Col>
-			<span id="lbl-interest-rate" class="label">
+			<span class="label">
 				Ränta
 				<Icon id="icn-info-interest-rate" name="info-circle" style="info" />
 			</span>
@@ -307,7 +329,7 @@
 			</Popover>
 		</Col>
 	</Row>
-	<Row cols="2">
+	<Row>
 		<Col>
 			<Input
 				id="inp-interest-rate"
@@ -320,7 +342,7 @@
 			/>
 		</Col>
 	</Row>
-	<Row cols="2">
+	<Row>
 		<Col>
 			<Input
 				id="inp-interest-rate"
@@ -335,7 +357,7 @@
 
 	<Row>
 		<Col>
-			<span id="lbl-upkeep" class="label">
+			<span class="label">
 				Driftkostnad
 				<Icon id="icn-info-upkeep" name="info-circle" style="info" />
 			</span>
@@ -345,11 +367,21 @@
 				title="Driftkostnad"
 				hideOnOutsideClick
 			>
-				Bostadens driftkostnad.
+				Bostadens driftkostnad, exempelvis:
+				<ul>
+					<li>El</li>
+					<li>Vatten</li>
+					<li>Uppvärmning</li>
+					<li>Försäkring</li>
+					<li>Avlopp</li>
+					<li>Sophantering</li>
+					<li>Snöröjning</li>
+					<li>Månadsavgift</li>
+				</ul>
 			</Popover>
 		</Col>
 	</Row>
-	<Row cols="2">
+	<Row>
 		<Col>
 			<Input
 				id="inp-upkeep"
@@ -362,22 +394,15 @@
 			/>
 		</Col>
 	</Row>
-	<Row cols="2">
+	<Row>
 		<Col>
-			<Input
-				id="inp-upkeep"
-				type="range"
-				bind:value={upkeep}
-				min="0"
-				max="25000"
-				step="50"
-			/>
+			<Input id="inp-upkeep" type="range" bind:value={upkeep} min="0" max="25000" step="50" />
 		</Col>
 	</Row>
 
 	<Row>
 		<Col>
-			<span id="lbl-tax" class="label">
+			<span class="label">
 				Fastighetsskatt
 				<Icon id="icn-info-tax" name="info-circle" style="info" />
 			</span>
@@ -391,7 +416,7 @@
 			</Popover>
 		</Col>
 	</Row>
-	<Row cols="2">
+	<Row>
 		<Col>
 			<Input
 				id="inp-tax"
@@ -404,16 +429,9 @@
 			/>
 		</Col>
 	</Row>
-	<Row cols="2">
+	<Row>
 		<Col>
-			<Input
-				id="inp-tax"
-				type="range"
-				bind:value={tax}
-				min="0"
-				max="10000"
-				step="50"
-			/>
+			<Input id="inp-tax" type="range" bind:value={tax} min="0" max="10000" step="50" />
 		</Col>
 	</Row>
 
@@ -428,13 +446,13 @@
 			<Table borderless hover>
 				<tbody>
 					<tr>
-						<th>Ränta</th>
-						<td><Currency value={interest} /></td>
+						<td>Ränta</td>
+						<td><FormattedNumber value={interest} /></td>
 					</tr>
 					<tr>
-						<th>Amortering</th>
+						<td>Amortering</td>
 						<td>
-							<Currency value={mortgage} />
+							<FormattedNumber value={mortgage} />
 							{#if isMortgageLimitExceeded}
 								<Alert color="warning" heading="Hög skuldkvot">
 									<p>
@@ -457,16 +475,17 @@
 						</td>
 					</tr>
 					<tr>
-						<th>Avdrag</th>
-						<td><Currency value={deduction} /></td>
+						<td>Avdrag</td>
+						<td><FormattedNumber value={deduction} /></td>
 					</tr>
 					<tr>
-						<th>Summa</th>
-						<td><Currency value={sumWithoutDeduction} /></td>
+						<td style="font-weight:bold;">Summa</td>
+						<td><FormattedNumber value={sumWithoutDeduction} --font-weight="bold" /></td
+						>
 					</tr>
 					<tr>
-						<th>Summa (efter avdrag)</th>
-						<td><Currency value={sumWithDeduction} /></td>
+						<td style="color: slategray;">Summa (efter avdrag)</td>
+						<td><FormattedNumber value={sumWithDeduction} --color="slategray" /></td>
 					</tr>
 				</tbody>
 			</Table>
@@ -477,12 +496,5 @@
 <style>
 	h2 {
 		font-size: 1.2em;
-	}
-
-	.label {
-		color: slategray;
-		font-family: 'Comic Sans MS';
-		font-size: 0.7em;
-		font-weight: bold;
 	}
 </style>
