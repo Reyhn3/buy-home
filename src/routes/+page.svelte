@@ -12,13 +12,15 @@
 	import FormattedNumber from './FormattedNumber.svelte';
 	import Details from './Details.svelte';
 
-
 	const DEBT_RATIO_LIMIT = 4.5;
 	const MIN_DEPOSIT_PERC = 0.15;
 	const DEDUCTION_LIMIT = 200000;
 	const DEDUCTION_FIRST = 0.3;
 	const DEDUCTION_REST = 0.21;
-
+	const PANTBREV_PERC = 0.02;
+	const PANTBREV_FEE = 375;
+	const LAGFART_PERC = 0.015;
+	const LAGFART_FEE = 825;
 
 	//TODO: Extract functions from here
 	/**
@@ -89,13 +91,17 @@
 		var yearlyInterest = i * 12;
 
 		if (yearlyInterest < DEDUCTION_LIMIT) {
-			return -1 * (Math.round((DEDUCTION_FIRST * yearlyInterest) / 12));
+			return -1 * Math.round((DEDUCTION_FIRST * yearlyInterest) / 12);
 		}
 
-		return -1 * Math.round(
-			(DEDUCTION_FIRST * DEDUCTION_LIMIT +
-				DEDUCTION_REST * (yearlyInterest - DEDUCTION_LIMIT)) /
-				12);
+		return (
+			-1 *
+			Math.round(
+				(DEDUCTION_FIRST * DEDUCTION_LIMIT +
+					DEDUCTION_REST * (yearlyInterest - DEDUCTION_LIMIT)) /
+					12
+			)
+		);
 	};
 
 	/**
@@ -109,6 +115,23 @@
 		return Math.round(i + m + u + t / 12 - Math.abs(d));
 	};
 
+	/**
+	 * @param {number} p The price of the house
+	 * @param {number} d The size of the deposit
+	 * @param {number} b The size of the existing pantbrev
+	 */
+	const calcPantbrev = (p: number, d: number, b: number) => {
+		var borrow = p - d;
+		return Math.round(PANTBREV_PERC * borrow + PANTBREV_FEE);
+	};
+
+	/**
+	 * @param {number} p The price of the house
+	 */
+	const calcLagfart = (p: number) => {
+		return Math.round(LAGFART_PERC * p + LAGFART_FEE);
+	};
+
 	// Household input
 	$: income = (40 + 40) * 1000;
 
@@ -118,6 +141,7 @@
 	$: deposit = 1000000;
 	$: upkeep = 4500;
 	$: tax = 9525;
+	$: pawn = 2000000;
 
 	// Calculated values
 	$: yearlyIncome = income * 12;
@@ -134,6 +158,8 @@
 	$: deduction = calcDeduction(interest);
 	$: sumWithoutDeduction = calcSum(interest, mortgage, upkeep, tax, 0);
 	$: sumWithDeduction = calcSum(interest, mortgage, upkeep, tax, deduction);
+	$: pantbrev = calcPantbrev(price, deposit, pawn);
+	$: lagfart = calcLagfart(price);
 </script>
 
 <div class="header">
@@ -150,6 +176,42 @@
 	</Container>
 </div>
 
+<ul class="nav nav-tabs" role="tablist">
+	<li class="nav-item" role="presentation">
+		<button
+			class="nav-link active"
+			id="living-tab"
+			data-bs-toggle="tab"
+			data-bs-target="#living-tab-pane"
+			type="button"
+			role="tab"
+			aria-controls="living-tab-pane"
+			aria-selected="true">
+			Boendekostnad
+		</button>
+	</li>
+	<li class="nav-item" role="presentation">
+		<button
+			class="nav-link"
+			id="buying-tab"
+			data-bs-toggle="tab"
+			data-bs-target="#buying-tab-pane"
+			type="button"
+			role="tab"
+			aria-controls="buying-tab-pane"
+			aria-selected="false">
+			Köpekostnad
+		</button>
+	</li>
+</ul>
+
+<div class="tab-content">
+	<div
+		class="tab-pane fade show active"
+		id="living-tab-pane"
+		role="tabpanel"
+		aria-labelledby="living-tab"
+		tabindex="0">
 <Container>
 	<Row>
 		<Col>
@@ -454,17 +516,17 @@
 		</Col>
 	</Row>
 
-	<Row cols="2">
+	<Row cols="3">
 		<Col>
 			<Table borderless hover>
 				<tbody>
 					<tr>
 						<td>Ränta</td>
-						<td><FormattedNumber value={interest} /></td>
+						<td class="text-end"><FormattedNumber value={interest} /></td>
 					</tr>
 					<tr>
 						<td>Amortering</td>
-						<td>
+						<td class="text-end">
 							<FormattedNumber value={mortgage} />
 							{#if isMortgageLimitExceeded}
 								<Alert color="warning" heading="Hög skuldkvot">
@@ -489,21 +551,89 @@
 					</tr>
 					<tr>
 						<td style="font-weight:bold;">Summa</td>
-						<td><FormattedNumber value={sumWithoutDeduction} --font-weight="bold" /></td>
+						<td class="text-end"><FormattedNumber value={sumWithoutDeduction} --font-weight="bold" /></td
+						>
 					</tr>
 					<tr>
 						<td style="color: slategray;">Avdrag</td>
-						<td><FormattedNumber value={deduction} --color="slategray" /></td>
+						<td class="text-end"><FormattedNumber value={deduction} --color="slategray" /></td>
 					</tr>
 					<tr>
 						<td style="color: slategray;">Summa (efter avdrag)</td>
-						<td><FormattedNumber value={sumWithDeduction} --color="slategray" /></td>
+						<td class="text-end"><FormattedNumber value={sumWithDeduction} --color="slategray" /></td>
 					</tr>
 				</tbody>
 			</Table>
 		</Col>
 	</Row>
 </Container>
+</div>
+<div
+	class="tab-pane fade"
+	id="buying-tab-pane"
+	role="tabpanel"
+	aria-labelledby="buying-tab"
+	tabindex="0">
+
+	<Container>
+		<Row>
+			<Col>
+				<h2>Inteckning</h2>
+			</Col>
+		</Row>
+
+		<Row>
+			<Col>
+				<span class="label">
+					Pantbrev
+					<Icon id="icn-info-pawn" name="info-circle" style="info" />
+				</span>
+				<Popover target="icn-info-pawn" placement="right" title="Pantbrev" hideOnOutsideClick>
+					Summan av befintliga pantbrev på bostaden.
+				</Popover>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<Input
+					id="inp-pawn"
+					type="number"
+					placeholder="Pantbrev"
+					bind:value={pawn}
+					min="0"
+					max="{price}"
+					step="50000"
+				/>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<Input
+					id="inp-pawn"
+					type="range"
+					bind:value={pawn}
+					min="0"
+					max="{price}"
+					step="50000"
+				/>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<Details id="pantbrev" label="Pantbrev" value={pantbrev}>
+					<span slot="description">Avgift att betala för nya pantbrev.</span>
+				</Details>
+			</Col>
+			<Col>
+				<Details id="lagfart" label="Lagfart" value={lagfart}>
+					<span slot="description">Avgift att betala för lagfarten.</span>
+				</Details>
+			</Col>
+		</Row>
+	</Container>
+
+</div>
+</div>
 
 <style>
 	h2 {

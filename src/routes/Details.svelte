@@ -4,9 +4,9 @@
 
 	export let id;
 	export let label;
-	export let value;
+	export let value = 0;
 	export let style;
-	export let decimals;
+	export let decimals = 0;
 </script>
 
 <Container>
