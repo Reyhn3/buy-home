@@ -25,14 +25,14 @@
 	 * @param {number} p The price of the house
 	 * @param {number} d The size of the deposit
 	 */
-	const calcLoan = (p, d) => {
+	const calcLoan = (p: number, d: number) => {
 		return Math.max(0, p - d);
 	};
 
 	/**
 	 * @param {number} d The size of the deposit
 	 */
-	const calcMaxLoan = (d) => {
+	const calcMaxLoan = (d: number) => {
 		return Math.round(d / 0.15) - d;
 	};
 
@@ -40,7 +40,7 @@
 	 * @param {number} l The size of the loan
 	 * @param {number} ir The interest rate
 	 */
-	const calcInterest = (l, ir) => {
+	const calcInterest = (l: number, ir: number) => {
 		return Math.round((l * ir) / 100 / 12);
 	};
 
@@ -48,7 +48,7 @@
 	 * @param {number} l The size of the loan
 	 * @param {number} i The monthly household income
 	 */
-	const calcDebtRatio = (l, i) => {
+	const calcDebtRatio = (l: number, i: number) => {
 		var yearlyIncome = i * 12;
 		var quotient = l / yearlyIncome;
 		return quotient;
@@ -59,7 +59,7 @@
 	 * @param {number} l The size of the loan
 	 * @param {number} i The monthly household income
 	 */
-	const calcMortgageRate = (p, l, i) => {
+	const calcMortgageRate = (p: number, l: number, i: number) => {
 		var quotient = l / p;
 		var mortgageRate = 0;
 
@@ -77,7 +77,7 @@
 	 * @param {number} l The size of the loan
 	 * @param {number} i The monthly household income
 	 */
-	const calcMortgage = (p, l, i) => {
+	const calcMortgage = (p: number, l: number, i: number) => {
 		var mortgageRate = calcMortgageRate(p, l, i);
 		return Math.round((l * mortgageRate) / 12);
 	};
@@ -85,29 +85,28 @@
 	/**
 	 * @param {number} i The monthly interest amount
 	 */
-	const calcDeduction = (i) => {
+	const calcDeduction = (i: number) => {
 		var yearlyInterest = i * 12;
 
 		if (yearlyInterest < DEDUCTION_LIMIT) {
-			return Math.round((DEDUCTION_FIRST * yearlyInterest) / 12);
+			return -1 * (Math.round((DEDUCTION_FIRST * yearlyInterest) / 12));
 		}
 
-		return Math.round(
+		return -1 * Math.round(
 			(DEDUCTION_FIRST * DEDUCTION_LIMIT +
 				DEDUCTION_REST * (yearlyInterest - DEDUCTION_LIMIT)) /
-				12
-		);
+				12);
 	};
 
 	/**
-	 * @param {number} i The monthly interest amount
-	 * @param {number} m The monthly mortgage amount
-	 * @param {number} u The monthly upkeep cost
-	 * @param {number} t The yearly property tax
-	 * @param {number} d The monthly deduction amount
+	 * @param {number} i The **monthly** interest amount
+	 * @param {number} m The **monthly** mortgage amount
+	 * @param {number} u The **monthly** upkeep cost
+	 * @param {number} t The **yearly** property tax
+	 * @param {number} d The **monthly** deduction amount
 	 */
-	const calcSum = (i, m, u, t, d) => {
-		return Math.round(i + m + u + t / 12 - d);
+	const calcSum = (i: number, m: number, u: number, t: number, d: number) => {
+		return Math.round(i + m + u + t / 12 - Math.abs(d));
 	};
 
 	// Household input
@@ -136,6 +135,20 @@
 	$: sumWithoutDeduction = calcSum(interest, mortgage, upkeep, tax, 0);
 	$: sumWithDeduction = calcSum(interest, mortgage, upkeep, tax, deduction);
 </script>
+
+<div class="header">
+	<Container>
+		<Row>
+			<Col>
+				<span class="label">
+					Månadskostnad&nbsp;
+					<FormattedNumber value={sumWithoutDeduction} --font-weight="bold" />
+					(<FormattedNumber value={sumWithDeduction} />&nbsp;efter avdrag)
+				</span>
+			</Col>
+		</Row>
+	</Container>
+</div>
 
 <Container>
 	<Row>
@@ -475,13 +488,12 @@
 						</td>
 					</tr>
 					<tr>
-						<td>Avdrag</td>
-						<td><FormattedNumber value={deduction} /></td>
+						<td style="font-weight:bold;">Summa</td>
+						<td><FormattedNumber value={sumWithoutDeduction} --font-weight="bold" /></td>
 					</tr>
 					<tr>
-						<td style="font-weight:bold;">Summa</td>
-						<td><FormattedNumber value={sumWithoutDeduction} --font-weight="bold" /></td
-						>
+						<td style="color: slategray;">Avdrag</td>
+						<td><FormattedNumber value={deduction} --color="slategray" /></td>
 					</tr>
 					<tr>
 						<td style="color: slategray;">Summa (efter avdrag)</td>
@@ -496,5 +508,14 @@
 <style>
 	h2 {
 		font-size: 1.2em;
+	}
+	.header {
+		position: sticky;
+		top: 0;
+		z-index: 999;
+		padding: 8pt 10pt;
+		margin: 0 0 10pt 0;
+		background: #555;
+		color: #f1f1f1;
 	}
 </style>
