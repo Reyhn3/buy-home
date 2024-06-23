@@ -47,9 +47,10 @@
 	 *
 	 * @param {number} l The size of the loan.
 	 * @param {number} ir The interest rate.
+	 * @param {number} d The **monthly** deduction amount.
 	 */
-	const calcInterest = (l: number, ir: number) => {
-		return Math.round((l * ir) / 100 / 12);
+	const calcInterest = (l: number, ir: number, d: number) => {
+		return Math.round((l * ir) / 100 / 12 + d);
 	};
 
 	/**
@@ -157,7 +158,7 @@
 	// Property input
 	$: price = 4500000;
 	$: interestRate = 5.2;
-	$: deposit = 1000000;
+	$: deposit = price * MIN_DEPOSIT_PERC;
 	$: upkeep = 4500;
 	$: tax = 9525;
 	$: pawn = 2000000;
@@ -171,12 +172,13 @@
 	$: minDeposit = MIN_DEPOSIT_PERC * price;
 	$: maxDeposit = Math.max(price, loan);
 	$: depositPerc = Math.round((deposit / price + Number.EPSILON) * 100) / 100;
-	$: interest = calcInterest(loan, interestRate);
+	$: interest = calcInterest(loan, interestRate, 0);
 	$: mortgageRate = calcMortgageRate(price, loan, income);
 	$: mortgage = calcMortgage(price, loan, income);
 	$: deduction = calcDeduction(interest);
 	$: sumWithoutDeduction = calcSum(interest, mortgage, upkeep, tax, 0);
 	$: sumWithDeduction = calcSum(interest, mortgage, upkeep, tax, deduction);
+	$: interestWithDeduction = calcInterest(loan, interestRate, deduction);
 	$: pantbrev = calcPantbrev(loan, pawn);
 	$: lagfart = calcLagfart(price);
 </script>
@@ -578,8 +580,12 @@
 						<td class="text-end"><FormattedNumber value={deduction} --color="slategray" /></td>
 					</tr>
 					<tr>
-						<td style="color: slategray;">Summa (efter avdrag)</td>
-						<td class="text-end"><FormattedNumber value={sumWithDeduction} --color="slategray" /></td>
+						<td style="color: slategray;">Ränta (efter avdrag)</td>
+						<td class="text-end"><FormattedNumber value={interestWithDeduction} --color="slategray" /></td>
+					</tr>
+					<tr>
+						<td style="color: slategray;font-weight:bold;">Summa (efter avdrag)</td>
+						<td class="text-end"><FormattedNumber value={sumWithDeduction} --color="slategray" --font-weight="bold" /></td>
 					</tr>
 				</tbody>
 			</Table>
