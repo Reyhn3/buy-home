@@ -51,6 +51,12 @@ The code will be deployed.
 
 - https://kinsta.com/blog/static-sveltekit/
 
+# Known Issues
+
+- Round up is needed on boundaries
+  The input controls' max value must be larger than the intended value, otherwise there's a risk that the real value cannot be set due to the step size.
+  Example: `max` is set to 1025 and `step` is set to 50. The value 1025 can not be set because of the step from 1000 + 50 is greater than 1025.
+
 # Future
 
 - Share calculation

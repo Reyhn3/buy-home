@@ -142,7 +142,7 @@
 		var additional = l - b;
 		console.warn("pantbrev " + additional)
 		if (additional > 0) {
-		return Math.round(PANTBREV_PERC * additional + PANTBREV_FEE);
+			return Math.round(PANTBREV_PERC * additional + PANTBREV_FEE);
 		}
 
 		return 0;
@@ -210,10 +210,12 @@
 	$: pawn = 2000000;
 
 	// Variable values
-	$: realtorFee = 50000
-	$: marketing = 10000
-	$: stylingFee = 10000
-	$: doubleLiving = 100000
+	$: realtorFee = 0
+	$: marketing = 0
+	$: stylingFee = 0
+	$: doubleLiving = 0
+	$: transferFee = 0
+	$: membershipFee = 0
 	$: addressChange = 1000
 	$: movingBoxes = 2100
 	$: movingHelp = 13500
@@ -238,7 +240,7 @@
 	$: pantbrev = calcPantbrev(loan, pawn);
 	$: lagfart = calcLagfart(price);
 	$: sumSelling = calcSellingCosts([realtorFee, marketing, stylingFee, doubleLiving]);
-	$: sumMoving = calcMovingCosts([addressChange, movingBoxes, movingHelp, movingCleaning]);
+	$: sumMoving = calcMovingCosts([transferFee, membershipFee, addressChange, movingBoxes, movingHelp, movingCleaning]);
 	$: sumBuying = calcBuyingCost([pantbrev, lagfart, sumSelling, sumMoving]);
 </script>
 
@@ -673,7 +675,8 @@
 					<Icon id="icn-info-pawn" name="info-circle" style="info" />
 				</span>
 				<Popover target="icn-info-pawn" placement="right" title="Pantbrev" hideOnOutsideClick>
-					Summan av befintliga pantbrev på bostaden.
+					<p>Summan av befintliga pantbrev på fastigheten.</p>
+					<p>Banken behöver ha pantbrev för hela beloppet fastigheten är belånad på. Om det redan finns pantbrev på fastigheten tar du över dessa. Behöver du låna högre belopp än det finns pantbrev för så tecknas nya pantbrev.</p>
 				</Popover>
 			</Col>
 		</Row>
@@ -686,7 +689,7 @@
 					bind:value={pawn}
 					min="0"
 					max="{loan}"
-					step="50000"
+					step="25000"
 				/>
 			</Col>
 		</Row>
@@ -698,19 +701,28 @@
 					bind:value={pawn}
 					min="0"
 					max="{loan}"
-					step="50000"
+					step="25000"
 				/>
 			</Col>
 		</Row>
 		<Row>
 			<Col>
 				<Details id="pantbrev" label="Pantbrev" value={pantbrev}>
-					<span slot="description">Avgift att betala för nya pantbrev.</span>
+					<span slot="description">
+						<p>Avgift att betala för nya pantbrev.</p>
+						<p>Kostnaden för ett nytt pantbrev är 2% av beloppet du behöver låna - en så kallad stämpelskatt. Du behöver också betala 375 kronor i expedieringsavgift till Lantmäteriet.</p>
+						{#if pantbrev > 0}
+						<p>Eftersom bolånet är större än befintliga pantbrev är detta avgiften som ska betalas för nytecknade pantbrev.</p>
+						{/if}
+					</span>
 				</Details>
 			</Col>
 			<Col>
 				<Details id="lagfart" label="Lagfart" value={lagfart}>
-					<span slot="description">Avgift att betala för lagfarten.</span>
+					<span slot="description">
+						<p>Avgift att betala för lagfarten.</p>
+						<p>Kostnaden för ett lagfarten är 1,5% av fastighetens pris. Du behöver också betala 825 kronor i expedieringsavgift till Lantmäteriet.</p>
+					</span>
 				</Details>
 			</Col>
 		</Row>
@@ -728,7 +740,8 @@
 					<Icon id="icn-info-realtor" name="info-circle" style="info" />
 				</span>
 				<Popover target="icn-info-realtor" placement="right" title="Mäklararvode" hideOnOutsideClick>
-					Mäklarens arvode vid försäljning av nuvarande bostad.
+					<p>Mäklarens arvode vid försäljning av nuvarande bostad.</p>
+					<p>Denna kostnad är avdragsgill i deklarationen efter en framtida försäljning av fastigheten, men det är en aktuell avgift som måste betalas <strong>nu</strong>. Avgiften dras av från försäljningen av fastigheten.</p>
 				</Popover>
 			</Col>
 		</Row>
@@ -872,6 +885,79 @@
 			</Col>
 		</Row>
 
+		<Row>
+			<Col>
+				<span class="label">
+					Överlåtelseavgift
+					<Icon id="icn-info-transfer" name="info-circle" style="info" />
+				</span>
+				<Popover target="icn-info-transfer" placement="right" title="Överlåtelseavgift" hideOnOutsideClick>
+					<p>Vissa bostadsrättsföreningar tar ut en administrativ avgift för överlåtesen av bostaden.</p>
+					<p>I vissa föreningar betalas den av <strong>säljaren</strong>, inte av köparen.</p>
+				</Popover>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<Input
+					id="inp-transfer"
+					type="number"
+					placeholder="Överlåtelseavgift"
+					bind:value={transferFee}
+					min="0"
+					max="2000"
+					step="50"
+				/>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<Input
+					id="inp-transfer"
+					type="range"
+					bind:value={transferFee}
+					min="0"
+					max="2000"
+					step="50"
+				/>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<span class="label">
+					Medlemsavgift
+					<Icon id="icn-info-membership" name="info-circle" style="info" />
+				</span>
+				<Popover target="icn-info-membership" placement="right" title="Medlemsavgift" hideOnOutsideClick>
+					Vissa bostadsrättsföreningar tar ut en avgift för registrering som medlem i föreningen.
+				</Popover>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<Input
+					id="inp-membership"
+					type="number"
+					placeholder="Överlåtelseavgift"
+					bind:value={membershipFee}
+					min="0"
+					max="2000"
+					step="50"
+				/>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<Input
+					id="inp-membership"
+					type="range"
+					bind:value={membershipFee}
+					min="0"
+					max="2000"
+					step="50"
+				/>
+			</Col>
+		</Row>
 		<Row>
 			<Col>
 				<span class="label">
