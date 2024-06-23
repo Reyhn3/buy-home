@@ -152,6 +152,47 @@
 		return Math.round(LAGFART_PERC * p + LAGFART_FEE);
 	};
 
+	/**
+	 * Calculates the sum of all selling costs. These are the costs associated with
+	 * selling the current residence, like realtor fees etc.
+	 *
+	 * @param {number[]} arr The selling costs to sum up.
+	 */
+	const calcSellingCosts = (arr: number[]) => {
+		var total = 0;
+		for (var i = 0; i < arr.length; i++) {
+    		total += arr[i];
+  		}
+  		return Math.round(total);
+	};
+
+	/**
+	 * Calculates the sum of all moving costs. These are the costs associated with
+	 * the actual moving, like cleaning, renting trucks etc.
+	 *
+	 * @param {number[]} arr The moving costs to sum up.
+	 */
+	const calcMovingCosts = (arr: number[]) => {
+		var total = 0;
+		for (var i = 0; i < arr.length; i++) {
+    		total += arr[i];
+  		}
+  		return Math.round(total);
+	};
+
+	/**
+	 * Calculates the sum of all buying costs.
+	 *
+	 * @param {number[]} arr The buying costs to sum up.
+	 */
+	const calcBuyingCost = (arr: number[]) => {
+		var total = 0;
+		for (var i = 0; i < arr.length; i++) {
+    		total += arr[i];
+  		}
+  		return Math.round(total);
+	};
+
 	// Household input
 	$: income = (40 + 40) * 1000;
 
@@ -162,6 +203,16 @@
 	$: upkeep = 4500;
 	$: tax = 9525;
 	$: pawn = 2000000;
+
+	// Variable values
+	$: realtorFee = 50000
+	$: marketing = 10000
+	$: stylingFee = 10000
+	$: doubleLiving = 100000
+	$: addressChange = 1000
+	$: movingBoxes = 2100
+	$: movingHelp = 13500
+	$: movingCleaning = 3200
 
 	// Calculated values
 	$: yearlyIncome = income * 12;
@@ -181,6 +232,9 @@
 	$: interestWithDeduction = calcInterest(loan, interestRate, deduction);
 	$: pantbrev = calcPantbrev(loan, pawn);
 	$: lagfart = calcLagfart(price);
+	$: sumSelling = calcSellingCosts([realtorFee, marketing, stylingFee, doubleLiving]);
+	$: sumMoving = calcMovingCosts([addressChange, movingBoxes, movingHelp, movingCleaning]);
+	$: sumBuying = calcBuyingCost([pantbrev, lagfart, sumSelling, sumMoving]);
 </script>
 
 <div class="header">
@@ -655,8 +709,345 @@
 				</Details>
 			</Col>
 		</Row>
-	</Container>
 
+		<Row>
+			<Col>
+				<h2>Försäljning</h2>
+			</Col>
+		</Row>
+
+		<Row>
+			<Col>
+				<span class="label">
+					Mäklararvode
+					<Icon id="icn-info-realtor" name="info-circle" style="info" />
+				</span>
+				<Popover target="icn-info-realtor" placement="right" title="Mäklararvode" hideOnOutsideClick>
+					Mäklarens arvode vid försäljning av nuvarande bostad.
+				</Popover>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<Input
+					id="inp-realtor"
+					type="number"
+					placeholder="Adressändring"
+					bind:value={realtorFee}
+					min="0"
+					max="200000"
+					step="1000"
+				/>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<Input
+					id="inp-realtor"
+					type="range"
+					bind:value={realtorFee}
+					min="0"
+					max="200000"
+					step="1000"
+				/>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<span class="label">
+					Annonsering
+					<Icon id="icn-info-marketing" name="info-circle" style="info" />
+				</span>
+				<Popover target="icn-info-marketing" placement="right" title="Annonsering" hideOnOutsideClick>
+					Avgift för annonsering vid försäljning av nuvarande bostad, ex. Hemnet.
+				</Popover>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<Input
+					id="inp-marketing"
+					type="number"
+					placeholder="Annonsering"
+					bind:value={marketing}
+					min="0"
+					max="20000"
+					step="500"
+				/>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<Input
+					id="inp-marketing"
+					type="range"
+					bind:value={marketing}
+					min="0"
+					max="20000"
+					step="500"
+				/>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<span class="label">
+					Styling
+					<Icon id="icn-info-styling" name="info-circle" style="info" />
+				</span>
+				<Popover target="icn-info-styling" placement="right" title="Styling" hideOnOutsideClick>
+					Avgift för home styling, ex. kostnaden för en stylingtjänst eller inköp av hemdekoration.
+				</Popover>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<Input
+					id="inp-styling"
+					type="number"
+					placeholder="Styling"
+					bind:value={stylingFee}
+					min="0"
+					max="20000"
+					step="500"
+				/>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<Input
+					id="inp-styling"
+					type="range"
+					bind:value={stylingFee}
+					min="0"
+					max="20000"
+					step="500"
+				/>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<span class="label">
+					Dubbelboende
+					<Icon id="icn-info-double" name="info-circle" style="info" />
+				</span>
+				<Popover target="icn-info-double" placement="right" title="Dubbelboende" hideOnOutsideClick>
+					Kostnad för eventuellt dubbelboende under en viss tid.
+				</Popover>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<Input
+					id="inp-double"
+					type="number"
+					placeholder="Dubbelboende"
+					bind:value={doubleLiving}
+					min="0"
+					max="500000"
+					step="10000"
+				/>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<Input
+					id="inp-double"
+					type="range"
+					bind:value={doubleLiving}
+					min="0"
+					max="500000"
+					step="10000"
+				/>
+			</Col>
+		</Row>
+
+		<Row>
+			<Col>
+				<h2>Flytt</h2>
+			</Col>
+		</Row>
+
+		<Row>
+			<Col>
+				<span class="label">
+					Adressändring
+					<Icon id="icn-info-address" name="info-circle" style="info" />
+				</span>
+				<Popover target="icn-info-address" placement="right" title="Adressändring" hideOnOutsideClick>
+					Kostnaden för att göra en adressändring.
+				</Popover>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<Input
+					id="inp-address"
+					type="number"
+					placeholder="Adressändring"
+					bind:value={addressChange}
+					min="0"
+					max="1000"
+					step="100"
+				/>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<Input
+					id="inp-address"
+					type="range"
+					bind:value={addressChange}
+					min="0"
+					max="1000"
+					step="100"
+				/>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<span class="label">
+					Flyttlådor
+					<Icon id="icn-info-boxes" name="info-circle" style="info" />
+				</span>
+				<Popover target="icn-info-boxes" placement="right" title="Flyttlådor" hideOnOutsideClick>
+					Kostnaden för flyttlådor, emballage, förvaring etc.
+				</Popover>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<Input
+					id="inp-boxes"
+					type="number"
+					placeholder="Flyttlådor"
+					bind:value={movingBoxes}
+					min="0"
+					max="10000"
+					step="500"
+				/>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<Input
+					id="inp-boxes"
+					type="range"
+					bind:value={movingBoxes}
+					min="0"
+					max="10000"
+					step="500"
+				/>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<span class="label">
+					Flytthjälp
+					<Icon id="icn-info-help" name="info-circle" style="info" />
+				</span>
+				<Popover target="icn-info-help" placement="right" title="Flytthjälp" hideOnOutsideClick>
+					Kostnaden för flytthjälp, från vänner eller från flyttfirma.
+				</Popover>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<Input
+					id="inp-help"
+					type="number"
+					placeholder="Flytthjälp"
+					bind:value={movingHelp}
+					min="0"
+					max="30000"
+					step="500"
+				/>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<Input
+					id="inp-help"
+					type="range"
+					bind:value={movingHelp}
+					min="0"
+					max="30000"
+					step="500"
+				/>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<span class="label">
+					Flyttstädning
+					<Icon id="icn-info-clean" name="info-circle" style="info" />
+				</span>
+				<Popover target="icn-info-clean" placement="right" title="Flyttstädning" hideOnOutsideClick>
+					Kostnaden för flyttstädning, antingen på egen hand eller via firma. Ibland är detta inkluderat i kostnaden för flytthjälp.
+				</Popover>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<Input
+					id="inp-clean"
+					type="number"
+					placeholder="Flyttstädning"
+					bind:value={movingCleaning}
+					min="0"
+					max="30000"
+					step="500"
+				/>
+			</Col>
+		</Row>
+		<Row>
+			<Col>
+				<Input
+					id="inp-clean"
+					type="range"
+					bind:value={movingCleaning}
+					min="0"
+					max="30000"
+					step="500"
+				/>
+			</Col>
+		</Row>
+
+		<Row>
+			<Col>
+				<h2>Summa</h2>
+			</Col>
+		</Row>
+
+		<Row cols="3">
+			<Col>
+				<Table borderless hover>
+					<tbody>
+						<tr>
+							<td>Pantbrev</td>
+							<td class="text-end"><FormattedNumber value={pantbrev} /></td>
+						</tr>
+						<tr>
+							<td>Lagfart</td>
+							<td class="text-end"><FormattedNumber value={lagfart} /></td>
+						</tr>
+						<tr>
+							<td>Försäljning</td>
+							<td class="text-end"><FormattedNumber value={sumSelling} /></td>
+						</tr>
+						<tr>
+							<td>Flyttkostnader</td>
+							<td class="text-end"><FormattedNumber value={sumMoving} /></td>
+						</tr>
+						<tr>
+							<td style="font-weight:bold;">Summa</td>
+							<td class="text-end"><FormattedNumber value={sumBuying} --font-weight="bold" /></td
+							>
+						</tr>
+					</tbody>
+				</Table>
+			</Col>
+		</Row>
+	</Container>
 </div>
 </div>
 
