@@ -116,13 +116,12 @@
 	};
 
 	/**
-	 * @param {number} p The price of the house
-	 * @param {number} d The size of the deposit
+	 * @param {number} l The size of the loan
 	 * @param {number} b The size of the existing pantbrev
 	 */
-	const calcPantbrev = (p: number, d: number, b: number) => {
-		var borrow = p - d;
-		return Math.round(PANTBREV_PERC * borrow + PANTBREV_FEE);
+	const calcPantbrev = (l: number, b: number) => {
+		var additional = l - b;
+		return Math.round(PANTBREV_PERC * additional + PANTBREV_FEE);
 	};
 
 	/**
@@ -158,7 +157,7 @@
 	$: deduction = calcDeduction(interest);
 	$: sumWithoutDeduction = calcSum(interest, mortgage, upkeep, tax, 0);
 	$: sumWithDeduction = calcSum(interest, mortgage, upkeep, tax, deduction);
-	$: pantbrev = calcPantbrev(price, deposit, pawn);
+	$: pantbrev = calcPantbrev(loan, pawn);
 	$: lagfart = calcLagfart(price);
 </script>
 
@@ -601,7 +600,7 @@
 					placeholder="Pantbrev"
 					bind:value={pawn}
 					min="0"
-					max="{price}"
+					max="{loan}"
 					step="50000"
 				/>
 			</Col>
@@ -613,7 +612,7 @@
 					type="range"
 					bind:value={pawn}
 					min="0"
-					max="{price}"
+					max="{loan}"
 					step="50000"
 				/>
 			</Col>
