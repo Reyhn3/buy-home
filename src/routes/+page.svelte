@@ -140,7 +140,12 @@
 	 */
 	const calcPantbrev = (l: number, b: number) => {
 		var additional = l - b;
+		console.warn("pantbrev " + additional)
+		if (additional > 0) {
 		return Math.round(PANTBREV_PERC * additional + PANTBREV_FEE);
+		}
+
+		return 0;
 	};
 
 	/**
