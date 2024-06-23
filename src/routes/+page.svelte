@@ -24,31 +24,39 @@
 
 	//TODO: Extract functions from here
 	/**
-	 * @param {number} p The price of the house
-	 * @param {number} d The size of the deposit
+	 * Calculates the size of the loan.
+	 *
+	 * @param {number} p The price of the house.
+	 * @param {number} d The size of the deposit.
 	 */
 	const calcLoan = (p: number, d: number) => {
 		return Math.max(0, p - d);
 	};
 
 	/**
-	 * @param {number} d The size of the deposit
+	 * Calculates the max size of loan allowed.
+	 *
+	 * @param {number} d The size of the deposit.
 	 */
 	const calcMaxLoan = (d: number) => {
 		return Math.round(d / 0.15) - d;
 	};
 
 	/**
-	 * @param {number} l The size of the loan
-	 * @param {number} ir The interest rate
+	 * Calculates the monthly interest cost.
+	 *
+	 * @param {number} l The size of the loan.
+	 * @param {number} ir The interest rate.
 	 */
 	const calcInterest = (l: number, ir: number) => {
 		return Math.round((l * ir) / 100 / 12);
 	};
 
 	/**
-	 * @param {number} l The size of the loan
-	 * @param {number} i The monthly household income
+	 * Calculates the debt ratio.
+	 *
+	 * @param {number} l The size of the loan.
+	 * @param {number} i The monthly household income.
 	 */
 	const calcDebtRatio = (l: number, i: number) => {
 		var yearlyIncome = i * 12;
@@ -57,9 +65,11 @@
 	};
 
 	/**
-	 * @param {number} p The price of the house
-	 * @param {number} l The size of the loan
-	 * @param {number} i The monthly household income
+	 * Calculates the mortgage rate.
+	 *
+	 * @param {number} p The price of the house.
+	 * @param {number} l The size of the loan.
+	 * @param {number} i The monthly household income.
 	 */
 	const calcMortgageRate = (p: number, l: number, i: number) => {
 		var quotient = l / p;
@@ -75,9 +85,11 @@
 	};
 
 	/**
-	 * @param {number} p The price of the house
-	 * @param {number} l The size of the loan
-	 * @param {number} i The monthly household income
+	 * Calculates the monthly mortgage.
+	 *
+	 * @param {number} p The price of the house.
+	 * @param {number} l The size of the loan.
+	 * @param {number} i The monthly household income.
 	 */
 	const calcMortgage = (p: number, l: number, i: number) => {
 		var mortgageRate = calcMortgageRate(p, l, i);
@@ -85,7 +97,9 @@
 	};
 
 	/**
-	 * @param {number} i The monthly interest amount
+	 * Calculates the monthly tax deduction.
+	 *
+	 * @param {number} i The monthly interest amount.
 	 */
 	const calcDeduction = (i: number) => {
 		var yearlyInterest = i * 12;
@@ -105,19 +119,23 @@
 	};
 
 	/**
-	 * @param {number} i The **monthly** interest amount
-	 * @param {number} m The **monthly** mortgage amount
-	 * @param {number} u The **monthly** upkeep cost
-	 * @param {number} t The **yearly** property tax
-	 * @param {number} d The **monthly** deduction amount
+	 * Calculates the total monthly cost of owning the house.
+	 *
+	 * @param {number} i The **monthly** interest amount.
+	 * @param {number} m The **monthly** mortgage amount.
+	 * @param {number} u The **monthly** upkeep cost.
+	 * @param {number} t The **yearly** property tax.
+	 * @param {number} d The **monthly** deduction amount.
 	 */
 	const calcSum = (i: number, m: number, u: number, t: number, d: number) => {
 		return Math.round(i + m + u + t / 12 - Math.abs(d));
 	};
 
 	/**
-	 * @param {number} l The size of the loan
-	 * @param {number} b The size of the existing pantbrev
+	 * Calculates the size of new pantbrev needed.
+	 *
+	 * @param {number} l The size of the loan.
+	 * @param {number} b The size of the existing pantbrev.
 	 */
 	const calcPantbrev = (l: number, b: number) => {
 		var additional = l - b;
@@ -125,7 +143,9 @@
 	};
 
 	/**
-	 * @param {number} p The price of the house
+	 * Calculates the size of the lagfart.
+	 *
+	 * @param {number} p The price of the house.
 	 */
 	const calcLagfart = (p: number) => {
 		return Math.round(LAGFART_PERC * p + LAGFART_FEE);
